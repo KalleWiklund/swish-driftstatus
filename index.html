@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swish driftstörningar</title>
+<style>
+  :root{
+    --bg:#f6f6f8; --card:#ffffff; --text:#1a1a20; --muted:#6b6b78;
+    --border:#e4e4ea; --accent:#e5257f; --accent-weak:#fbe4f0;
+    --crit:#b3001b; --major:#e05100; --minor:#b58900; --none:#3a7d34;
+    --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#131318; --card:#1d1d24; --text:#ececf1; --muted:#9a9aa8;
+      --border:#2e2e38; --accent:#ff5aa6; --accent-weak:#3a1526;
+      --crit:#ff6b7d; --major:#ffa05c; --minor:#e8c65c; --none:#7fd077;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 18px 64px}
+  header h1{margin:0 0 4px;font-size:22px;letter-spacing:-.01em}
+  header p{margin:0;color:var(--muted);font-size:13px}
+  header a{color:var(--accent)}
+
+  .bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-end;
+    margin:22px 0 14px;padding:14px;background:var(--card);border:1px solid var(--border);
+    border-radius:12px;box-shadow:var(--shadow)}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .field select,.seg button{font:inherit}
+  select{padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)}
+  .seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .seg button{padding:7px 12px;border:0;background:var(--bg);color:var(--text);cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+  .spacer{flex:1}
+  button.refresh{padding:7px 12px;border:1px solid var(--border);border-radius:8px;
+    background:var(--bg);color:var(--text);cursor:pointer}
+
+  .stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .chip{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--card);
+    border:1px solid var(--border)}
+  .chip b{font-weight:700}
+
+  .ongoing{margin-bottom:16px;padding:12px 14px;border-radius:12px;
+    background:var(--accent-weak);border:1px solid var(--accent);font-size:13px}
+  .ongoing b{color:var(--accent)}
+
+  .group{margin:18px 0 8px;font-size:12px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.05em;color:var(--muted)}
+
+  .inc{background:var(--card);border:1px solid var(--border);border-radius:12px;
+    padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .inc-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .sev{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .sev.critical{background:var(--crit)} .sev.major{background:var(--major)}
+  .sev.minor{background:var(--minor)} .sev.none{background:var(--none)}
+  .inc h3{margin:0;font-size:15px;font-weight:600;flex:1;min-width:180px}
+  .state{font-size:12px;color:var(--muted);white-space:nowrap}
+  .state.live{color:var(--accent);font-weight:700}
+  .banks{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .bank{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);
+    background:var(--bg);color:var(--muted)}
+  .meta{margin-top:8px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}
+  .body{margin-top:8px;font-size:13px;color:var(--text);white-space:pre-wrap}
+  .empty{padding:40px 12px;text-align:center;color:var(--muted)}
+  .err{padding:14px;border:1px solid var(--crit);border-radius:12px;color:var(--crit);
+    background:var(--card)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Swish driftstörningar</h1>
+    <p>Källa: <a href="https://status.swish.nu" target="_blank" rel="noopener">status.swish.nu</a>
+       · <span id="updated">hämtar…</span></p>
+  </header>
+
+  <div id="ongoing"></div>
+
+  <div class="bar">
+    <div class="field">
+      <label>Urval</label>
+      <div class="seg" id="view">
+        <button data-view="10" aria-pressed="true">Senaste 10 dagarna</button>
+        <button data-view="50" aria-pressed="false">50 senaste</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="sort">Sortera</label>
+      <select id="sort">
+        <option value="date">Senast inträffad</option>
+        <option value="severity">Allvarlighetsgrad</option>
+        <option value="bank">Drabbad bank</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="bank">Bank</label>
+      <select id="bank"><option value="">Alla</option></select>
+    </div>
+    <div class="spacer"></div>
+    <button class="refresh" id="refresh">Uppdatera</button>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  <div id="list"></div>
+</div>
+
+<script>
+const API = "https://status.swish.nu/api/v2/incidents.json";
+const SEV_RANK = {critical:3, major:2, minor:1, none:0};
+const SEV_LABEL = {critical:"Kritisk", major:"Större", minor:"Mindre", none:"Ingen"};
+const STATE_LABEL = {
+  investigating:"Utreds", identified:"Identifierad", monitoring:"Övervakas",
+  resolved:"Löst", postmortem:"Efteranalys"
+};
+const fmt = new Intl.DateTimeFormat("sv-SE",
+  {dateStyle:"medium", timeStyle:"short", timeZone:"Europe/Stockholm"});
+
+let raw = [];   // normaliserade incidenter (alltid 50 st från API:t)
+const state = {view:"10", sort:"date", bank:""};
+
+function parseBanks(inc){
+  let s = inc.name.replace(/^\s*(disturbance|disruption|issues?|problem|delays?)\s+(at|with|for|hos|vid|med)\s+/i, "");
+  if (s === inc.name) s = "";
+  let banks = s ? s.split(/\s*(?:,|&|\/|\band\b|\boch\b)\s*/i).map(x=>x.trim()).filter(Boolean) : [];
+  if (!banks.length){
+    banks = (inc.components||[]).map(c=>c.name).filter(n=>!/^(private|business|commerce)$/i.test(n));
+  }
+  if (!banks.length) banks = ["Okänd / övergripande"];
+  return [...new Set(banks)];
+}
+
+function normalize(list){
+  return list.map(inc=>{
+    const start = inc.started_at || inc.created_at;
+    const end = inc.resolved_at || null;
+    const ups = (inc.incident_updates||[]).slice().sort((a,b)=>
+      new Date(b.created_at)-new Date(a.created_at));
+    return {
+      id: inc.id,
+      name: inc.name,
+      impact: inc.impact in SEV_RANK ? inc.impact : "none",
+      status: inc.status,
+      resolved: inc.status === "resolved" || inc.status === "postmortem",
+      start: new Date(start),
+      end: end ? new Date(end) : null,
+      banks: parseBanks(inc),
+      lastUpdate: ups[0] ? ups[0].body.trim() : "",
+      link: inc.shortlink
+    };
+  });
+}
+
+function durationText(i){
+  const to = i.end || new Date();
+  let mins = Math.round((to - i.start)/60000);
+  if (mins < 1) mins = 1;
+  const h = Math.floor(mins/60), m = mins%60;
+  const s = h ? `${h} h ${m} min` : `${m} min`;
+  return i.end ? s : s + " (pågår)";
+}
+
+function currentSet(){
+  let set = raw;
+  if (state.view === "10"){
+    const cutoff = Date.now() - 10*24*3600*1000;
+    set = set.filter(i => i.start.getTime() >= cutoff);
+  }
+  if (state.bank){
+    set = set.filter(i => i.banks.includes(state.bank));
+  }
+  return set;
+}
+
+function sortSet(set){
+  const s = set.slice();
+  if (state.sort === "date"){
+    s.sort((a,b)=> b.start - a.start);
+  } else if (state.sort === "severity"){
+    s.sort((a,b)=> SEV_RANK[b.impact]-SEV_RANK[a.impact] || b.start-a.start);
+  } else {
+    s.sort((a,b)=> a.banks[0].localeCompare(b.banks[0], "sv") || b.start-a.start);
+  }
+  return s;
+}
+
+function groupKey(i){
+  if (state.sort === "severity") return SEV_LABEL[i.impact];
+  if (state.sort === "bank") return i.banks[0];
+  return null;
+}
+
+function render(){
+  const list = document.getElementById("list");
+  const set = sortSet(currentSet());
+
+  // statistik
+  const counts = {critical:0, major:0, minor:0, none:0};
+  set.forEach(i=>counts[i.impact]++);
+  document.getElementById("stats").innerHTML =
+    `<span class="chip"><b>${set.length}</b> incidenter</span>` +
+    ["critical","major","minor","none"].filter(k=>counts[k]).map(k=>
+      `<span class="chip"><b>${counts[k]}</b> ${SEV_LABEL[k].toLowerCase()}</span>`).join("");
+
+  if (!set.length){
+    list.innerHTML = `<div class="empty">Inga incidenter i det här urvalet.</div>`;
+    return;
+  }
+
+  let html = "", lastGroup = null;
+  for (const i of set){
+    const g = groupKey(i);
+    if (g !== null && g !== lastGroup){
+      html += `<div class="group">${g}</div>`;
+      lastGroup = g;
+    }
+    html += `
+      <article class="inc">
+        <div class="inc-top">
+          <span class="sev ${i.impact}">${SEV_LABEL[i.impact]}</span>
+          <h3>${esc(i.name)}</h3>
+          <span class="state ${i.resolved ? "" : "live"}">${STATE_LABEL[i.status]||i.status}</span>
+        </div>
+        <div class="banks">${i.banks.map(b=>`<span class="bank">${esc(b)}</span>`).join("")}</div>
+        <div class="meta">
+          <span>Start: ${fmt.format(i.start)}</span>
+          <span>${i.end ? "Slut: "+fmt.format(i.end) : "Ej avslutad"}</span>
+          <span>Varaktighet: ${durationText(i)}</span>
+        </div>
+        ${i.lastUpdate ? `<div class="body">${esc(i.lastUpdate)}</div>` : ""}
+      </article>`;
+  }
+  list.innerHTML = html;
+}
+
+function renderOngoing(){
+  const live = raw.filter(i=>!i.resolved);
+  const el = document.getElementById("ongoing");
+  el.innerHTML = live.length
+    ? `<div class="ongoing"><b>Pågående just nu:</b> ${live.map(i=>esc(i.name)).join(" · ")}</div>`
+    : "";
+}
+
+function fillBankFilter(){
+  const banks = [...new Set(raw.flatMap(i=>i.banks))].sort((a,b)=>a.localeCompare(b,"sv"));
+  const sel = document.getElementById("bank");
+  sel.innerHTML = `<option value="">Alla</option>` +
+    banks.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join("");
+  sel.value = state.bank;
+}
+
+function esc(s){return String(s).replace(/[&<>"]/g, c=>(
+  {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
+
+async function load(){
+  const upd = document.getElementById("updated");
+  upd.textContent = "hämtar…";
+  try{
+    const r = await fetch(API, {cache:"no-store"});
+    if (!r.ok) throw new Error("HTTP "+r.status);
+    const data = await r.json();
+    raw = normalize(data.incidents || []);
+    upd.textContent = "uppdaterad " + fmt.format(new Date());
+    fillBankFilter();
+    renderOngoing();
+    render();
+  }catch(e){
+    document.getElementById("list").innerHTML =
+      `<div class="err">Kunde inte hämta data: ${esc(e.message)}. Försök igen.</div>`;
+    upd.textContent = "fel vid hämtning";
+  }
+}
+
+document.getElementById("view").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-view]"); if (!b) return;
+  state.view = b.dataset.view;
+  [...e.currentTarget.children].forEach(x=>
+    x.setAttribute("aria-pressed", x===b));
+  render();
+});
+document.getElementById("sort").addEventListener("change", e=>{
+  state.sort = e.target.value; render();
+});
+document.getElementById("bank").addEventListener("change", e=>{
+  state.bank = e.target.value; render();
+});
+document.getElementById("refresh").addEventListener("click", load);
+
+load();
+</script>
+</body>
+</html>
