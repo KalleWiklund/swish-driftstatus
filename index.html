@@ -7,102 +7,107 @@
 <title>Swish driftstatus</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#ffffff;
-    --surface:#f5f5f6;
+    --surface:#f4f4f6;
     --ink:#141414;
-    --muted:#67676f;
-    --border:#e1e1e4;
-    --red:#e43424;      /* Ny Teknik-röd */
+    --muted:#6b6b73;
+    --border:#e3e3e6;
+    --red:#e43424;
     --red-dark:#a11916;
-    --navy:#0c446c;      /* Ny Teknik-blå */
+    --navy:#0c446c;
     --amber:#b26a00;
     --green:#2f7d32;
-    --cond:"Barlow Condensed","Oswald","Arial Narrow",system-ui,sans-serif;
+    --radius:12px;
+    --radius-sm:9px;
+    --ring:0 1px 2px rgba(20,20,20,.04),0 1px 1px rgba(20,20,20,.03);
+    --head:"Archivo",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
     --sans:"Roboto",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans)}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans);
+    -webkit-font-smoothing:antialiased}
 
-  /* Masthead i Ny Teknik-anda: vit, tvåfärgad ordbild, röd linjal */
-  .masthead{background:var(--bg);border-bottom:2px solid var(--red)}
-  .masthead-inner{max-width:900px;margin:0 auto;padding:18px 20px 14px}
-  .wordmark{font:700 34px/1 var(--cond);letter-spacing:.005em;text-transform:none}
-  .wordmark .a{color:var(--red)}
-  .wordmark .b{color:var(--navy)}
-  .kicker{display:block;font:600 12px/1 var(--cond);letter-spacing:.16em;
-    text-transform:uppercase;color:var(--red);margin-bottom:6px}
+  /* Masthead – stort, svart, Wired-aktig grotesk */
+  .masthead{background:var(--bg);border-bottom:1px solid var(--border)}
+  .masthead-inner{max-width:920px;margin:0 auto;padding:34px 20px 24px}
+  .kicker{display:block;font:700 12px/1 var(--head);letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .wordmark{margin:0;color:#000;font:800 52px/1.02 var(--head);letter-spacing:-.025em}
 
-  .wrap{max-width:900px;margin:0 auto;padding:20px 20px 72px}
-  .source{margin:0 0 18px;color:var(--muted);font-size:13px}
+  .wrap{max-width:920px;margin:0 auto;padding:24px 20px 80px}
+  .source{margin:0 0 20px;color:var(--muted);font-size:13px}
   .source a{color:var(--red);text-decoration:none}
   .source a:hover{text-decoration:underline}
 
-  /* Kontrollpanel */
-  .bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;
-    margin-bottom:16px;padding:14px;background:var(--surface);border:1px solid var(--border)}
-  .field{display:flex;flex-direction:column;gap:5px}
-  .field label{font:600 11px/1 var(--cond);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
-  select{padding:7px 9px;border:1px solid var(--border);border-radius:0;background:var(--bg);
-    color:var(--ink);font:inherit;font-size:14px}
-  select:focus-visible{outline:2px solid var(--navy);outline-offset:1px}
-  .seg{display:flex;border:1px solid var(--border)}
-  .seg button{padding:7px 13px;border:0;background:var(--bg);color:var(--ink);cursor:pointer;
+  /* Kontrollpanel – rundade rektanglar (The Verge-stil) */
+  .bar{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end;margin-bottom:18px;
+    padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font:700 11px/1 var(--head);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  select{padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);
+    background:var(--bg);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+  select:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+  .seg{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+  .seg button{padding:9px 14px;border:0;background:var(--bg);color:var(--ink);cursor:pointer;
     font:500 14px/1.2 var(--sans)}
   .seg button+button{border-left:1px solid var(--border)}
-  .seg button[aria-pressed="true"]{background:var(--red);color:#fff}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
   .spacer{flex:1}
-  button.refresh{padding:7px 13px;border:1px solid var(--navy);border-radius:0;
-    background:var(--bg);color:var(--navy);cursor:pointer;font:500 14px/1.2 var(--sans)}
-  button.refresh:hover{background:var(--navy);color:#fff}
+  button.refresh{padding:9px 16px;border:1px solid var(--ink);border-radius:var(--radius-sm);
+    background:var(--ink);color:#fff;cursor:pointer;font:600 14px/1.2 var(--sans)}
+  button.refresh:hover{background:#000}
 
   /* Räknare */
-  .stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-  .chip{font-size:12px;padding:4px 10px;background:var(--surface);border:1px solid var(--border)}
+  .stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+  .chip{font-size:12px;padding:5px 11px;background:var(--surface);border:1px solid var(--border);
+    border-radius:999px}
   .chip b{font-weight:700}
 
   /* Pågående-banner */
-  .ongoing{margin-bottom:20px;padding:12px 14px;background:#fdecea;
-    border:1px solid var(--red);border-left-width:4px;font-size:13px}
-  .ongoing b{color:var(--red-dark);text-transform:uppercase;font:700 12px/1 var(--cond);letter-spacing:.08em}
+  .ongoing{margin-bottom:22px;padding:14px 16px;background:#fdecea;border:1px solid var(--red);
+    border-radius:var(--radius);font-size:13px}
+  .ongoing b{color:var(--red-dark);text-transform:uppercase;font:700 12px/1 var(--head);
+    letter-spacing:.08em;margin-right:4px}
 
   /* Grupprubriker vid sortering */
-  .group{margin:26px 0 10px;padding-bottom:5px;border-bottom:2px solid var(--red);
-    font:600 15px/1 var(--cond);text-transform:uppercase;letter-spacing:.08em;color:var(--navy)}
-  .group:first-child{margin-top:4px}
+  .group{margin:28px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--ink);
+    font:700 14px/1 var(--head);text-transform:uppercase;letter-spacing:.08em;color:var(--ink)}
+  .group:first-child{margin-top:6px}
 
-  /* Incidentkort – redaktionell "flagga" till vänster */
+  /* Incidentkort – rundade rektanglar med färgflagga */
   .inc{background:var(--bg);border:1px solid var(--border);border-left:4px solid var(--muted);
-    padding:14px 16px;margin-bottom:10px}
+    border-radius:var(--radius);padding:16px 18px;margin-bottom:12px;box-shadow:var(--ring)}
   .inc-critical{border-left-color:var(--red-dark)}
   .inc-major{border-left-color:var(--red)}
   .inc-minor{border-left-color:var(--amber)}
   .inc-none{border-left-color:var(--navy)}
-  .inc-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-  .sev{font:700 11px/1 var(--cond);text-transform:uppercase;letter-spacing:.06em;
-    padding:4px 8px;color:#fff;white-space:nowrap}
+  .inc-top{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+  .sev{font:700 11px/1 var(--head);text-transform:uppercase;letter-spacing:.05em;
+    padding:5px 9px;border-radius:6px;color:#fff;white-space:nowrap}
   .sev.critical{background:var(--red-dark)}
   .sev.major{background:var(--red)}
   .sev.minor{background:var(--amber)}
   .sev.none{background:var(--navy)}
-  .inc h3{margin:0;font:600 19px/1.2 var(--cond);flex:1;min-width:180px;color:var(--ink)}
+  .inc h3{margin:0;font:700 19px/1.25 var(--head);letter-spacing:-.01em;flex:1;min-width:180px;color:var(--ink)}
   .state{font-size:12px;color:var(--muted);white-space:nowrap;text-transform:uppercase;
-    font-weight:500;letter-spacing:.04em}
-  .state.live{color:var(--red);font-weight:700}
-  .banks{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
-  .bank{font-size:11px;padding:2px 8px;border:1px solid var(--border);background:var(--surface);
-    color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
-  .meta{margin-top:9px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 16px}
-  .body{margin-top:9px;font-size:13.5px;color:var(--ink);white-space:pre-wrap}
-  .empty{padding:44px 12px;text-align:center;color:var(--muted)}
-  .err{padding:14px;border:1px solid var(--red-dark);border-left-width:4px;color:var(--red-dark);
-    background:#fdecea}
+    font-weight:600;letter-spacing:.04em}
+  .state.live{color:var(--red)}
+  .banks{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .bank{font-size:11px;padding:3px 9px;border:1px solid var(--border);background:var(--surface);
+    color:var(--muted);border-radius:999px;text-transform:uppercase;letter-spacing:.03em}
+  .meta{margin-top:10px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 16px}
+  .body{margin-top:10px;font-size:13.5px;color:var(--ink);white-space:pre-wrap}
+  .empty{padding:48px 12px;text-align:center;color:var(--muted)}
+  .err{padding:16px;border:1px solid var(--red-dark);border-radius:var(--radius);
+    color:var(--red-dark);background:#fdecea}
 
-  @media (max-width:520px){
-    .wordmark{font-size:28px}
-    .bar{gap:10px 12px}
+  @media (max-width:560px){
+    .masthead-inner{padding:26px 18px 20px}
+    .wordmark{font-size:38px}
+    .bar{gap:12px}
     .spacer{display:none}
   }
 </style>
@@ -111,7 +116,7 @@
 <div class="masthead">
   <div class="masthead-inner">
     <span class="kicker">Driftbevakning</span>
-    <div class="wordmark"><span class="a">Swish</span><span class="b">&nbsp;driftstatus</span></div>
+    <h1 class="wordmark">Swish driftstatus</h1>
   </div>
 </div>
 
