@@ -60,6 +60,13 @@
     background:var(--ink);color:#fff;cursor:pointer;font:600 14px/1.2 var(--sans)}
   button.refresh:hover{background:#000}
 
+  /* Snabbval */
+  .quick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+  .quick button{padding:8px 15px;border:1px solid var(--border);border-radius:999px;
+    background:var(--bg);color:var(--ink);cursor:pointer;font:600 13px/1.2 var(--sans)}
+  .quick button:hover{border-color:var(--ink)}
+  .quick button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
   /* Räknare */
   .stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
   .chip{font-size:12px;padding:5px 11px;background:var(--surface);border:1px solid var(--border);
@@ -140,6 +147,7 @@
         <option value="date">Senast inträffad</option>
         <option value="severity">Allvarlighetsgrad</option>
         <option value="bank">Drabbad bank</option>
+        <option value="duration">Längsta avbrott</option>
       </select>
     </div>
     <div class="field">
@@ -148,6 +156,11 @@
     </div>
     <div class="spacer"></div>
     <button class="refresh" id="refresh">Uppdatera</button>
+  </div>
+
+  <div class="quick">
+    <button id="qBank" type="button" aria-pressed="false">Mest drabbade bank</button>
+    <button id="qDur" type="button" aria-pressed="false">Längsta avbrotten</button>
   </div>
 
   <div class="stats" id="stats"></div>
@@ -166,6 +179,7 @@ const fmt = new Intl.DateTimeFormat("sv-SE",
   {dateStyle:"medium", timeStyle:"short", timeZone:"Europe/Stockholm"});
 
 let raw = [];   // normaliserade incidenter (alltid 50 st från API:t)
+let mostBank = null;   // {b, n} – banken som förekommer i flest av de 50
 const state = {view:"10", sort:"date", bank:""};
 
 function parseBanks(inc){
@@ -193,6 +207,7 @@ function normalize(list){
       resolved: inc.status === "resolved" || inc.status === "postmortem",
       start: new Date(start),
       end: end ? new Date(end) : null,
+      mins: Math.max(1, Math.round(((end ? new Date(end) : new Date()) - new Date(start)) / 60000)),
       banks: parseBanks(inc),
       lastUpdate: ups[0] ? ups[0].body.trim() : "",
       link: inc.shortlink
@@ -227,6 +242,8 @@ function sortSet(set){
     s.sort((a,b)=> b.start - a.start);
   } else if (state.sort === "severity"){
     s.sort((a,b)=> SEV_RANK[b.impact]-SEV_RANK[a.impact] || b.start-a.start);
+  } else if (state.sort === "duration"){
+    s.sort((a,b)=> b.mins - a.mins || b.start - a.start);
   } else {
     s.sort((a,b)=> a.banks[0].localeCompare(b.banks[0], "sv") || b.start-a.start);
   }
@@ -240,6 +257,7 @@ function groupKey(i){
 }
 
 function render(){
+  syncControls();
   const list = document.getElementById("list");
   const set = sortSet(currentSet());
 
@@ -298,6 +316,27 @@ function fillBankFilter(){
   sel.value = state.bank;
 }
 
+function computeMostBank(){
+  const c = {};
+  raw.forEach(i => i.banks.forEach(b => c[b] = (c[b]||0)+1));
+  let best = null;
+  for (const [b,n] of Object.entries(c))
+    if (!best || n > best.n || (n === best.n && b.localeCompare(best.b,"sv") < 0)) best = {b, n};
+  return best;
+}
+
+// Håll alla kontroller i synk med state (kallas från render)
+function syncControls(){
+  const qb = document.getElementById("qBank");
+  qb.textContent = mostBank ? `Mest drabbade bank: ${mostBank.b} (${mostBank.n})` : "Mest drabbade bank";
+  qb.setAttribute("aria-pressed", String(!!mostBank && state.bank === mostBank.b));
+  document.getElementById("qDur").setAttribute("aria-pressed", String(state.sort === "duration"));
+  document.getElementById("sort").value = state.sort;
+  document.getElementById("bank").value = state.bank;
+  [...document.getElementById("view").children].forEach(x =>
+    x.setAttribute("aria-pressed", String(x.dataset.view === state.view)));
+}
+
 function esc(s){return String(s).replace(/[&<>"]/g, c=>(
   {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
 
@@ -311,6 +350,7 @@ async function load(){
     raw = normalize(data.incidents || []);
     upd.textContent = "uppdaterad " + fmt.format(new Date());
     fillBankFilter();
+    mostBank = computeMostBank();
     renderOngoing();
     render();
   }catch(e){
@@ -334,6 +374,23 @@ document.getElementById("bank").addEventListener("change", e=>{
   state.bank = e.target.value; render();
 });
 document.getElementById("refresh").addEventListener("click", load);
+
+// Snabbval: mest drabbade bank (av de 50 senaste)
+document.getElementById("qBank").addEventListener("click", ()=>{
+  if (!mostBank) return;
+  if (state.bank === mostBank.b){
+    state.bank = "";
+  } else {
+    state.bank = mostBank.b;
+    state.view = "50";
+  }
+  render();
+});
+// Snabbval: längsta avbrotten (minuter, fallande)
+document.getElementById("qDur").addEventListener("click", ()=>{
+  state.sort = state.sort === "duration" ? "date" : "duration";
+  render();
+});
 
 load();
 </script>
