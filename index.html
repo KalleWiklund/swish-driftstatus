@@ -32,14 +32,11 @@
 
   /* Masthead – stort, svart, Wired-aktig grotesk */
   .masthead{background:var(--bg);border-bottom:1px solid var(--border)}
-  .masthead-inner{max-width:920px;margin:0 auto;padding:34px 20px 24px;
-    display:flex;align-items:center;justify-content:space-between;gap:28px}
-  .masthead-text{min-width:0}
+  .masthead-inner{max-width:920px;margin:0 auto;padding:28px 20px 24px}
+  .masthead-illustration{display:block;width:100%;height:auto;margin-bottom:22px}
   .kicker{display:block;font:700 12px/1 var(--head);letter-spacing:.18em;
     text-transform:uppercase;color:var(--muted);margin-bottom:12px}
   .wordmark{margin:0;color:#000;font:800 52px/1.02 var(--head);letter-spacing:-.025em}
-  .masthead-img{width:220px;height:140px;object-fit:cover;border-radius:var(--radius);
-    border:1px solid var(--border);flex-shrink:0}
 
   .wrap{max-width:920px;margin:0 auto;padding:24px 20px 80px}
   .source{margin:0 0 20px;color:var(--muted);font-size:13px}
@@ -116,9 +113,9 @@
     color:var(--red-dark);background:#fdecea}
 
   @media (max-width:560px){
-    .masthead-inner{padding:26px 18px 20px;flex-direction:column;align-items:flex-start}
+    .masthead-inner{padding:22px 18px 20px}
+    .masthead-illustration{margin-bottom:16px}
     .wordmark{font-size:38px}
-    .masthead-img{width:100%;height:150px;order:2}
     .bar{gap:12px}
     .spacer{display:none}
   }
@@ -127,12 +124,54 @@
 <body>
 <div class="masthead">
   <div class="masthead-inner">
-    <div class="masthead-text">
-      <span class="kicker">Driftbevakning</span>
-      <h1 class="wordmark">Swish driftstatus</h1>
-    </div>
-    <img class="masthead-img" src="img/header.jpg" width="220" height="140" loading="eager"
-      alt="Skrivbord med bärbar dator och kaffekopp">
+    <svg class="masthead-illustration" viewBox="0 0 1200 300" role="img"
+      aria-label="Illustration av en statuslinje som avbryts av en driftstörning, markerad med en varningstriangel">
+      <title>Statuslinje med driftstörning</title>
+      <rect x="2" y="2" width="1196" height="296" rx="20" ry="20"
+        style="fill:var(--surface);stroke:var(--border)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+
+      <g style="stroke:var(--border)" stroke-width="1" vector-effect="non-scaling-stroke">
+        <line x1="90" y1="30" x2="90" y2="270"/>
+        <line x1="205" y1="30" x2="205" y2="270"/>
+        <line x1="320" y1="30" x2="320" y2="270"/>
+        <line x1="435" y1="30" x2="435" y2="270"/>
+        <line x1="550" y1="30" x2="550" y2="270"/>
+        <line x1="665" y1="30" x2="665" y2="270"/>
+        <line x1="780" y1="30" x2="780" y2="270"/>
+        <line x1="895" y1="30" x2="895" y2="270"/>
+        <line x1="1010" y1="30" x2="1010" y2="270"/>
+        <line x1="1125" y1="30" x2="1125" y2="270"/>
+      </g>
+
+      <line x1="40" y1="150" x2="1160" y2="150" style="stroke:var(--border)"
+        stroke-width="1.5" stroke-dasharray="6 7" vector-effect="non-scaling-stroke"/>
+
+      <rect x="400" y="14" width="240" height="272" style="fill:var(--red)" opacity="0.08"/>
+      <line x1="400" y1="14" x2="400" y2="286" style="stroke:var(--red)" stroke-width="1.5"
+        stroke-dasharray="4 4" opacity="0.5" vector-effect="non-scaling-stroke"/>
+      <line x1="640" y1="14" x2="640" y2="286" style="stroke:var(--red)" stroke-width="1.5"
+        stroke-dasharray="4 4" opacity="0.5" vector-effect="non-scaling-stroke"/>
+
+      <polyline points="40,150 80,150 100,134 120,150 160,150 180,134 200,150 240,150 260,134 280,150 320,150 340,134 360,150 400,150 420,150"
+        style="fill:none;stroke:var(--ink)" stroke-width="4" stroke-linecap="round"
+        stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      <polyline points="420,150 438,150 450,88 462,214 474,66 486,150 498,150 560,150 575,178 590,116 605,150 620,150"
+        style="fill:none;stroke:var(--red-dark)" stroke-width="4" stroke-linecap="round"
+        stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      <polyline points="620,150 660,150 680,138 700,150 740,150 760,150 800,150 820,134 840,150 880,150 900,134 920,150 960,150 980,134 1000,150 1040,150 1060,134 1080,150 1120,150 1140,134 1160,150"
+        style="fill:none;stroke:var(--ink)" stroke-width="4" stroke-linecap="round"
+        stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+
+      <circle cx="420" cy="150" r="5" style="fill:var(--red-dark)"/>
+      <circle cx="620" cy="150" r="5" style="fill:var(--red-dark)"/>
+
+      <path d="M520,38 L544,80 L496,80 Z" style="fill:var(--red-dark)" stroke-linejoin="round"/>
+      <rect x="516.5" y="52" width="7" height="16" rx="3.5" style="fill:#fff"/>
+      <circle cx="520" cy="72" r="3.2" style="fill:#fff"/>
+    </svg>
+
+    <span class="kicker">Driftbevakning</span>
+    <h1 class="wordmark">Swish driftstatus</h1>
   </div>
 </div>
 
